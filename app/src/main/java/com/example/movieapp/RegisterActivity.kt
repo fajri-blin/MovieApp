@@ -1,5 +1,7 @@
 package com.example.movieapp
 
+import AccountEntity
+import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -7,13 +9,26 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.movieapp.database.MyApplication
 import com.example.movieapp.ui.theme.MovieAppTheme
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+data class RegistrationInput(
+    val email: String,
+    val password: String,
+    val confirmPassword: String
+)
 
 class RegisterActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,6 +50,8 @@ class RegisterActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen() {
+    val context = LocalContext.current
+    val registrationInput = remember { mutableStateOf(RegistrationInput("", "", "")) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -49,8 +66,10 @@ fun RegisterScreen() {
         )
 
         OutlinedTextField(
-            value = "", // TODO: Bind to ViewModel
-            onValueChange = {}, // TODO: Update ViewModel
+            value = registrationInput.value.email, // TODO: Bind to ViewModel
+            onValueChange = { newValue ->
+                registrationInput.value = registrationInput.value.copy(email = newValue)
+            }, // TODO: Update ViewModel
             label = { Text("Email") },
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Email
@@ -85,7 +104,23 @@ fun RegisterScreen() {
         )
 
         Button(
-            onClick = {}, // TODO: Handle registration
+            onClick = {
+                val application = context.applicationContext as Application
+                val database = (application  as MyApplication).database
+                val accountDao = database.accountDao()
+
+                val input = registrationInput.value
+
+                if (input.password == input.confirmPassword) {
+                    val accountEntity = AccountEntity(email = input.email, password = input.password)
+                    CoroutineScope(Dispatchers.IO).launch {
+                        accountDao.insertAccount(accountEntity)
+                    }
+                } else {
+                    // Handle password mismatch error
+                }
+
+            }, // TODO: Handle registration
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
@@ -103,3 +138,6 @@ fun RegisterScreenPreview() {
         RegisterScreen()
     }
 }
+
+
+

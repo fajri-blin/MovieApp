@@ -1,6 +1,3 @@
-package com.example.movieapp
-
-import AccountEntity
 import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -30,23 +27,6 @@ data class RegistrationInput(
     val confirmPassword: String
 )
 
-class RegisterActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            MovieAppTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    RegisterScreen()
-                }
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RegisterScreen() {
@@ -66,10 +46,10 @@ fun RegisterScreen() {
         )
 
         OutlinedTextField(
-            value = registrationInput.value.email, // TODO: Bind to ViewModel
+            value = registrationInput.value.email,
             onValueChange = { newValue ->
                 registrationInput.value = registrationInput.value.copy(email = newValue)
-            }, // TODO: Update ViewModel
+            },
             label = { Text("Email") },
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Email
@@ -80,8 +60,10 @@ fun RegisterScreen() {
         )
 
         OutlinedTextField(
-            value = "", // TODO: Bind to ViewModel
-            onValueChange = {}, // TODO: Update ViewModel
+            value = registrationInput.value.password,
+            onValueChange = { newValue ->
+                registrationInput.value = registrationInput.value.copy(password = newValue)
+            },
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions.Default.copy(
@@ -93,8 +75,10 @@ fun RegisterScreen() {
         )
 
         OutlinedTextField(
-            value = "", // TODO: Bind to ViewModel
-            onValueChange = {}, // TODO: Update ViewModel
+            value = registrationInput.value.confirmPassword,
+            onValueChange = { newValue ->
+                registrationInput.value = registrationInput.value.copy(confirmPassword = newValue)
+            },
             label = { Text("Confirm Password") },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions.Default.copy(
@@ -106,7 +90,7 @@ fun RegisterScreen() {
         Button(
             onClick = {
                 val application = context.applicationContext as Application
-                val database = (application  as MyApplication).database
+                val database = (application as MyApplication).database
                 val accountDao = database.accountDao()
 
                 val input = registrationInput.value
@@ -138,6 +122,3 @@ fun RegisterScreenPreview() {
         RegisterScreen()
     }
 }
-
-
-

@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.movieapp.navigations.NavigationScreen
 import com.example.movieapp.ui.theme.MovieAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -22,7 +23,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    Greeting("Android")
+                    NavigationScreen()
                 }
             }
         }
@@ -30,10 +31,9 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
+fun HomeScreen() {
     Text(
-        text = "Hello $name!",
-        modifier = modifier
+        text = "Hello Android!",
     )
 }
 
@@ -41,6 +41,6 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview() {
     MovieAppTheme {
-        Greeting("Android")
+        HomeScreen()
     }
 }

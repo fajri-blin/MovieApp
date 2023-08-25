@@ -1,3 +1,4 @@
+// MyApplication.kt
 package com.example.movieapp.database
 
 import android.app.Application

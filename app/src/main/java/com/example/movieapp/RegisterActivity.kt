@@ -1,3 +1,5 @@
+package com.example.movieapp
+
 import android.app.Application
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -15,6 +17,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.movieapp.database.AccountEntity
 import com.example.movieapp.database.MyApplication
 import com.example.movieapp.ui.theme.MovieAppTheme
 import kotlinx.coroutines.CoroutineScope

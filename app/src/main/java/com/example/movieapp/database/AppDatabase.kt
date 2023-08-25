@@ -1,7 +1,7 @@
 package com.example.movieapp.database
 
-import AccountEntity
 import android.content.Context
+import androidx.lifecycle.ViewModelProvider.NewInstanceFactory.Companion.instance
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase

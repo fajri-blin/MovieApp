@@ -1,8 +1,10 @@
-@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class)
+@file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
+    ExperimentalMaterial3Api::class
+)
 
 package com.example.movieapp.navigations
 
-import RegisterScreen
 import android.annotation.SuppressLint
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
@@ -15,10 +17,12 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.movieapp.HomeScreen
 import com.example.movieapp.LoginScreen
+import com.example.movieapp.RegisterScreen
+import com.example.movieapp.database.AccountDao
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun NavigationScreen() {
+fun NavigationScreen(accountDao: AccountDao) {
     val navController = rememberNavController()
 
     Scaffold(
@@ -33,7 +37,7 @@ fun NavigationScreen() {
     ) {
         NavHost(navController = navController, startDestination = "home") {
             composable("home") { HomeScreen() }
-            composable("login") { LoginScreen() }
+            composable("login") { LoginScreen(accountDao) }
             composable("register") { RegisterScreen() }
         }
     }

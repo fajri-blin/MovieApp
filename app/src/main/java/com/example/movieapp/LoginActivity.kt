@@ -7,17 +7,32 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
+import com.example.movieapp.database.AccountDao
+import com.example.movieapp.database.AccountEntity
+import com.example.movieapp.database.AppDatabase
 import com.example.movieapp.ui.theme.MovieAppTheme
+import kotlinx.coroutines.launch
+
 
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val appDatabase = AppDatabase.getDatabase(applicationContext)
+        val accountDao = appDatabase.accountDao()
+
         setContent {
             MovieAppTheme {
                 // A surface container using the 'background' color from the theme
@@ -25,7 +40,7 @@ class LoginActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LoginScreen()
+                    LoginScreen(accountDao)
                 }
             }
         }
@@ -34,7 +49,15 @@ class LoginActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen() {
+fun LoginScreen(accountDao: AccountDao) {
+
+    // Declare your mutable state for email and password
+    var email by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+
+    var loginResult by remember { mutableStateOf("") }
+
+    val coroutineScope = rememberCoroutineScope()
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -49,8 +72,8 @@ fun LoginScreen() {
         )
 
         OutlinedTextField(
-            value = "", // TODO: Bind to ViewModel
-            onValueChange = {}, // TODO: Update ViewModel
+            value = email, // TODO: Bind to ViewModel
+            onValueChange = {newEmail -> email = newEmail}, // TODO: Update ViewModel
             label = { Text("Email") },
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Email
@@ -61,8 +84,8 @@ fun LoginScreen() {
         )
 
         OutlinedTextField(
-            value = "", // TODO: Bind to ViewModel
-            onValueChange = {}, // TODO: Update ViewModel
+            value = password, // TODO: Bind to ViewModel
+            onValueChange = {newPassword -> password = newPassword}, // TODO: Update ViewModel
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions.Default.copy(
@@ -74,7 +97,16 @@ fun LoginScreen() {
         )
 
         Button(
-            onClick = {}, // TODO: Handle login
+            onClick = {
+                coroutineScope.launch {
+                    val account = accountDao.getAccountByEmailAndPassword(email, password)
+                    if (account != null) {
+                        loginResult = "Login successful!"
+                    } else {
+                        loginResult = "Login failed. Check email and password."
+                    }
+                }
+            }, // TODO: Handle login
             modifier = Modifier
                 .fillMaxWidth()
                 .height(48.dp)
@@ -84,10 +116,29 @@ fun LoginScreen() {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun LoginScreenPreview() {
-    MovieAppTheme {
-        LoginScreen()
-    }
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun LoginScreenPreview() {
+//    val mockAccountDao = object : AccountDao {
+//        override suspend fun insertAccount(account: AccountEntity) {
+//            TODO("Not yet implemented")
+//        }
+//
+//        override suspend fun getAccountByEmail(email: String): AccountEntity? {
+//            TODO("Not yet implemented")
+//        }
+//
+//        override suspend fun getAccountByEmailAndPassword(email: String, password: String): AccountEntity? {
+//            // Mock implementation for testing purposes
+//            return null
+//        }
+//
+//        // Implement other functions from AccountDao interface if needed
+//    }
+//
+//    val mockViewModel = LoginViewModel(mockAccountDao)
+//
+//    MovieAppTheme {
+//        LoginScreen(viewModel = mockViewModel)
+//    }
+//}

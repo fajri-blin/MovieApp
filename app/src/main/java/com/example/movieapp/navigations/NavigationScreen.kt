@@ -38,7 +38,7 @@ fun NavigationScreen(accountDao: AccountDao) {
         NavHost(navController = navController, startDestination = "home") {
             composable("home") { HomeScreen() }
             composable("login") { LoginScreen(accountDao) }
-            composable("register") { RegisterScreen() }
+            composable("register") { RegisterScreen(navController) }
         }
     }
 }

@@ -14,8 +14,8 @@ android {
     defaultConfig {
         val properties = Properties()
         properties.load(rootProject.file("api.properties").inputStream())
-
         buildConfigField("String", "TMDB_API_KEY", "\"${properties.getProperty("TMDB_API_KEY")}\"")
+
         applicationId = "com.example.movieapp"
         minSdk = 24
         //noinspection OldTargetApi
@@ -92,5 +92,8 @@ dependencies {
 
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+
+    implementation ("io.coil-kt:coil-compose:1.3.2")
+
 
 }

@@ -2,14 +2,10 @@
 
 package com.example.movieapp.movie
 
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
+import com.example.movieapp.BuildConfig
 
-val apiKey = "YOUR_API_KEY"
 
-val retrofit = Retrofit.Builder()
-    .baseUrl("https://api.themoviedb.org/3/") // Base URL of the TMDB API
-    .addConverterFactory(GsonConverterFactory.create())
-    .build()
+object ApiUtils {
+    val tmdbApiKey: String = BuildConfig.TMDB_API_KEY
+}
 
-val tmdbApiService = retrofit.create(TmdbApiService::class.java)

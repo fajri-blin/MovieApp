@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.com.intellij.icons.AllIcons.FileTypes.Properties
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -9,6 +12,10 @@ android {
     compileSdk = 33
 
     defaultConfig {
+        val properties = Properties()
+        properties.load(rootProject.file("api.properties").inputStream())
+
+        buildConfigField("String", "TMDB_API_KEY", "\"${properties.getProperty("TMDB_API_KEY")}\"")
         applicationId = "com.example.movieapp"
         minSdk = 24
         //noinspection OldTargetApi
@@ -40,6 +47,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.4.3"
@@ -50,6 +58,7 @@ android {
         }
     }
 }
+
 
 dependencies {
 

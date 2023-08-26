@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.movieapp.database.AppDatabase
+import com.example.movieapp.database.MyApplication
 import com.example.movieapp.navigations.NavigationScreen
 import com.example.movieapp.ui.theme.MovieAppTheme
 
@@ -18,7 +19,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val appDatabase = AppDatabase.getDatabase(applicationContext)
+        val myApp = application as MyApplication
+        val appDatabase = myApp.database
         val accountDao = appDatabase.accountDao()
         setContent {
             MovieAppTheme {

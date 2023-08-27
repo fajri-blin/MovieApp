@@ -32,6 +32,7 @@ fun NavigationScreen(accountDao: AccountDao) {
             TopAppBar(
                 title = { Text(text = "Movie App") },
                 actions = {
+
                     NavigationActions(navController = navController)
                 }
             )

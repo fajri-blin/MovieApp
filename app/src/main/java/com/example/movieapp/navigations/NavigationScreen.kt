@@ -1,10 +1,11 @@
 @file:OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
     ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class
+    ExperimentalMaterial3Api::class, ExperimentalMaterial3Api::class
 )
 
 package com.example.movieapp.navigations
 
+import DetailScreen
 import android.annotation.SuppressLint
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Lock
@@ -36,9 +37,15 @@ fun NavigationScreen(accountDao: AccountDao) {
         }
     ) {
         NavHost(navController = navController, startDestination = "home") {
-            composable("home") { HomeScreen() }
+            composable("home") { HomeScreen(navController) }
             composable("login") { LoginScreen(accountDao) }
             composable("register") { RegisterScreen(navController) }
+            composable("detail/{movieId}") { backStackEntry ->
+                val movieId = backStackEntry.arguments?.getString("movieId")?.toIntOrNull()
+                movieId?.let { id ->
+                    DetailScreen(movieId = id, navController = navController)
+                } /* Handle invalid movieId */
+            }
         }
     }
 }

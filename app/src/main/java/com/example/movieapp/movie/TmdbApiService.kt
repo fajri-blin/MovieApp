@@ -17,7 +17,7 @@ interface TmdbApiService {
     suspend fun getMovieDetails(
         @Path("movie_id") movieId: Int,
         @Query("api_key") apiKey: String
-    ): Response<ApiResponse<MovieDetailResponse>>
+    ): Response<MovieDetailResponse>
 }
 
 data class ApiResponse<T>(

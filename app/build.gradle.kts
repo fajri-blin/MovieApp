@@ -95,5 +95,7 @@ dependencies {
 
     implementation ("io.coil-kt:coil-compose:1.3.2")
 
+    implementation ("com.google.accompanist:accompanist-glide:0.15.0") // Use the latest version
 
+    implementation ("io.coil-kt:coil-compose:1.4.0") // Use the latest version
 }

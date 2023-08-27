@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -31,6 +32,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberImagePainter
 import com.example.movieapp.database.AccountDao
 import com.example.movieapp.database.MyApplication
@@ -49,27 +52,28 @@ class MainActivity : ComponentActivity() {
         val appDatabase = myApp.database
         val accountDao = appDatabase.accountDao()
         setContent {
+            val navController = rememberNavController() // Initialize NavController inside the setContent block
             MovieAppTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainContent(accountDao = accountDao)
+                    MainContent(accountDao = accountDao, navController = navController)
                 }
             }
         }
     }
 }
 @Composable
-fun MainContent(accountDao: AccountDao) {
+fun MainContent(accountDao: AccountDao, navController: NavController) {
     Column {
         NavigationScreen(accountDao)
-        HomeScreen()
+        HomeScreen(navController)
     }
 }
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavController) {
     val scope = rememberCoroutineScope()
     var movieList by remember { mutableStateOf<List<Movie>>(emptyList()) }
 
@@ -97,16 +101,19 @@ fun HomeScreen() {
         // Display fetched movie data here
         LazyVerticalGrid(columns = GridCells.Fixed(2), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp)){
             items(movieList) { movie ->
-                MovieCard(movie = movie)
+                MovieCard(movie = movie, onMovieClick = {
+                    navController.navigate("detail/${movie.id}")
+                })
             }
         }
     }
 }
 
 @Composable
-fun MovieCard(movie: Movie) {
+fun MovieCard(movie: Movie, onMovieClick: () -> Unit) {
     Card(
         modifier = Modifier
+            .clickable { onMovieClick.invoke() }
             .padding(8.dp)
             .fillMaxWidth(),
     ) {
@@ -139,14 +146,5 @@ fun MovieCard(movie: Movie) {
                 modifier = Modifier.fillMaxWidth()
             )
         }
-    }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    MovieAppTheme {
-        HomeScreen()
     }
 }

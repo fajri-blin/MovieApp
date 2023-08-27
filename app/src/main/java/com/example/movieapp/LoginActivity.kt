@@ -16,14 +16,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.example.movieapp.database.AccountDao
-import com.example.movieapp.database.AccountEntity
 import com.example.movieapp.database.AppDatabase
 import com.example.movieapp.ui.theme.MovieAppTheme
 import kotlinx.coroutines.launch
@@ -45,7 +41,10 @@ class LoginActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LoginScreen(accountDao, navController)
+                    LoginScreen(accountDao, navController){
+                        loggedIn, accountId ->
+                        // Update login status here
+                    }
                 }
             }
         }
@@ -54,7 +53,7 @@ class LoginActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(accountDao: AccountDao, navController: NavController) {
+fun LoginScreen(accountDao: AccountDao, navController: NavController, onLoginStatusChange: (Boolean, Any?) -> Unit) {
 
     // Declare your mutable state for email and password
     var email by remember { mutableStateOf("") }
@@ -107,7 +106,10 @@ fun LoginScreen(accountDao: AccountDao, navController: NavController) {
                     val account = accountDao.getAccountByEmailAndPassword(email, password)
                     if (account != null) {
                         loginResult = "Login Succesfully"
+                        onLoginStatusChange(true, account.id)
                         navController.navigate("home")
+                    }else{
+                        onLoginStatusChange(false, null)
                     }
                 }
             }, // TODO: Handle login

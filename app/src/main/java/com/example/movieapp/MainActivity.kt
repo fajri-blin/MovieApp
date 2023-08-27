@@ -30,12 +30,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberImagePainter
 import com.example.movieapp.database.AccountDao
+import com.example.movieapp.database.FavouriteDao
 import com.example.movieapp.database.MyApplication
 import com.example.movieapp.model.Movie
 import com.example.movieapp.movie.ApiUtils
@@ -51,6 +51,7 @@ class MainActivity : ComponentActivity() {
         val myApp = application as MyApplication
         val appDatabase = myApp.database
         val accountDao = appDatabase.accountDao()
+        val favouriteDao = appDatabase.favouriteDao()
         setContent {
             val navController = rememberNavController() // Initialize NavController inside the setContent block
             MovieAppTheme {
@@ -59,16 +60,16 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainContent(accountDao = accountDao, navController = navController)
+                    MainContent(accountDao = accountDao, favouriteDao = favouriteDao, navController = navController)
                 }
             }
         }
     }
 }
 @Composable
-fun MainContent(accountDao: AccountDao, navController: NavController) {
+fun MainContent(accountDao: AccountDao, favouriteDao: FavouriteDao, navController: NavController) {
     Column {
-        NavigationScreen(accountDao)
+        NavigationScreen(accountDao, favouriteDao)
         HomeScreen(navController)
     }
 }

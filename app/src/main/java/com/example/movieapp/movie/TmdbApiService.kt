@@ -3,6 +3,7 @@ package com.example.movieapp.movie
 import com.example.movieapp.model.Movie
 import retrofit2.Response
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface TmdbApiService {
@@ -11,6 +12,12 @@ interface TmdbApiService {
         @Query("api_key") apiKey: String,
         @Query("page") page: Int
     ): Response<ApiResponse<MovieResponse>>
+
+    @GET("movie/{movie_id}")
+    suspend fun getMovieDetails(
+        @Path("movie_id") movieId: Int,
+        @Query("api_key") apiKey: String
+    ): Response<ApiResponse<MovieDetailResponse>>
 }
 
 data class ApiResponse<T>(
@@ -25,4 +32,13 @@ data class MovieResponse(
     // Add other properties you need
 )
 
+data class MovieDetailResponse(
+    val id: Int,
+    val title: String,
+    val backdrop_path: String?,
+    val poster_path: String?,
+    val release_date: String?,
+    val overview: String?,
+    // Add other properties you need for movie details
+)
 

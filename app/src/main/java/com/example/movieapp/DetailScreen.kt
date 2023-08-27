@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.FavoriteBorder
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -21,21 +24,23 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import coil.compose.ImagePainter.State.Empty.painter
 import coil.compose.rememberImagePainter
+import com.example.movieapp.database.FavouriteDao
+import com.example.movieapp.database.FavouriteEntity
 import com.example.movieapp.model.MovieDetail
 import com.example.movieapp.movie.ApiUtils
 import com.example.movieapp.movie.TmdbApiManager.tmdbApiService
+import kotlinx.coroutines.launch
 
 @Composable
-fun DetailScreen(movieId: Int, navController: NavController) {
+fun DetailScreen(movieId: Int, accountId: Int?,favouriteDao: FavouriteDao, navController: NavController) {
     val scope = rememberCoroutineScope()
     var movieDetail by remember { mutableStateOf<MovieDetail?>(null) }
+    var isFavorite by remember { mutableStateOf(false) }
 
     // Fetch movie detail using the API
     LaunchedEffect(movieId) {
@@ -51,6 +56,11 @@ fun DetailScreen(movieId: Int, navController: NavController) {
                     overview = it.overview ?: ""
                 )
             }
+        }
+        // Check favorite status here and update isFavorite accordingly
+        if(accountId != null) {
+            val favouriteEntity = favouriteDao.checkFavouriteMovie(movieId, accountId)
+            isFavorite = favouriteEntity != null
         }
     }
 
@@ -94,6 +104,38 @@ fun DetailScreen(movieId: Int, navController: NavController) {
                 style = MaterialTheme.typography.bodyMedium
             )
         }
+    }
+    // Circular button for adding/removing favorite
+    FloatingActionButton(
+        onClick = {
+            scope.launch {
+                isFavorite = !isFavorite
+                // Update favorite status in the database
+                if (isFavorite) {
+                    // Add movie to favorites
+                    val favouriteEntity = FavouriteEntity(
+                        account_id = accountId,
+                        movie_name = movieDetail?.title ?: "",
+                        movie_id = movieId
+                    )
+                    favouriteDao.insertFavourite(favouriteEntity)
+                } else {
+                    // Remove movie from favorites
+                    favouriteDao.deleteFavoriteById(movieId)
+                }
+            }
+            // Toggle the favorite status
+        },
+        modifier = Modifier
+            .padding(16.dp)
+            .size(48.dp)
+    ) {
+        // Display heart icon based on favorite status
+        Icon(
+            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary
+        )
     }
 
     // Add a back button to navigate back to the previous screen

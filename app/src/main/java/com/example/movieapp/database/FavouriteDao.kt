@@ -14,4 +14,6 @@ interface FavouriteDao {
     @Query("SELECT * FROM favourite WHERE account_id = :account_id")
     suspend fun getFavourite(account_id: Int?): List<FavouriteEntity>?
 
+    @Query("SELECT * FROM favourite WHERE movie_id = :movie_id AND account_id = :account_id")
+    suspend fun  checkFavouriteMovie(movie_id: Int?, account_id: Int?): FavouriteEntity?
 }

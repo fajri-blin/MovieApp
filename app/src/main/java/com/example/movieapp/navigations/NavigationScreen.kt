@@ -79,7 +79,7 @@ fun NavigationScreen(accountDao: AccountDao, favouriteDao: FavouriteDao) {
             composable("detail/{movieId}") { backStackEntry ->
                 val movieId = backStackEntry.arguments?.getString("movieId")?.toIntOrNull()
                 movieId?.let { id ->
-                    DetailScreen(movieId = id, navController = navController)
+                    DetailScreen(movieId = id, accountId , favouriteDao, navController = navController)
                 } /* Handle invalid movieId */
             }
             composable("favourites") {

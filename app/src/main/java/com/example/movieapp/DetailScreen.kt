@@ -58,11 +58,11 @@ fun DetailScreen(movieId: Int, navController: NavController) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(16.dp)
+                .padding(top = 100.dp, start = 16.dp, end = 16.dp)
         ) {
             Text(
                 text = movie.title,
-                style = MaterialTheme.typography.bodyMedium,
+                style = MaterialTheme.typography.headlineMedium,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(bottom = 8.dp)
             )

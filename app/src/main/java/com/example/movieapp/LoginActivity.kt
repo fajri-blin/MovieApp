@@ -72,8 +72,8 @@ fun LoginScreen(accountDao: AccountDao) {
         )
 
         OutlinedTextField(
-            value = email, // TODO: Bind to ViewModel
-            onValueChange = {newEmail -> email = newEmail}, // TODO: Update ViewModel
+            value = email,
+            onValueChange = {newEmail -> email = newEmail},
             label = { Text("Email") },
             keyboardOptions = KeyboardOptions.Default.copy(
                 keyboardType = KeyboardType.Email
@@ -84,8 +84,8 @@ fun LoginScreen(accountDao: AccountDao) {
         )
 
         OutlinedTextField(
-            value = password, // TODO: Bind to ViewModel
-            onValueChange = {newPassword -> password = newPassword}, // TODO: Update ViewModel
+            value = password,
+            onValueChange = {newPassword -> password = newPassword},
             label = { Text("Password") },
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions.Default.copy(
@@ -116,29 +116,3 @@ fun LoginScreen(accountDao: AccountDao) {
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun LoginScreenPreview() {
-//    val mockAccountDao = object : AccountDao {
-//        override suspend fun insertAccount(account: AccountEntity) {
-//            TODO("Not yet implemented")
-//        }
-//
-//        override suspend fun getAccountByEmail(email: String): AccountEntity? {
-//            TODO("Not yet implemented")
-//        }
-//
-//        override suspend fun getAccountByEmailAndPassword(email: String, password: String): AccountEntity? {
-//            // Mock implementation for testing purposes
-//            return null
-//        }
-//
-//        // Implement other functions from AccountDao interface if needed
-//    }
-//
-//    val mockViewModel = LoginViewModel(mockAccountDao)
-//
-//    MovieAppTheme {
-//        LoginScreen(viewModel = mockViewModel)
-//    }
-//}

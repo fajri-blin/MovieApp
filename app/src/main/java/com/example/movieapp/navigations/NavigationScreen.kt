@@ -9,6 +9,7 @@ package com.example.movieapp.navigations
 import DetailScreen
 import android.annotation.SuppressLint
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
@@ -46,6 +47,13 @@ fun NavigationScreen(accountDao: AccountDao, favouriteDao: FavouriteDao) {
                             navController.navigate("favourites")
                         }) {
                             Icon(imageVector = Icons.Default.Favorite, contentDescription = "Favourite")
+                        }
+                        IconButton(onClick = {
+                            loggedIn = false
+                            accountId = null
+                            // You can also navigate to the login screen here if needed
+                        }) {
+                            Icon(imageVector = Icons.Default.ExitToApp, contentDescription = "Logout")
                         }
                     }
                     NavigationActions(navController = navController)

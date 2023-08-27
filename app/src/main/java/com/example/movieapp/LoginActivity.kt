@@ -19,11 +19,15 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.rememberNavController
 import com.example.movieapp.database.AccountDao
 import com.example.movieapp.database.AccountEntity
 import com.example.movieapp.database.AppDatabase
 import com.example.movieapp.ui.theme.MovieAppTheme
 import kotlinx.coroutines.launch
+
 
 
 class LoginActivity : ComponentActivity() {
@@ -35,12 +39,13 @@ class LoginActivity : ComponentActivity() {
 
         setContent {
             MovieAppTheme {
+                val navController = rememberNavController()
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LoginScreen(accountDao)
+                    LoginScreen(accountDao, navController)
                 }
             }
         }
@@ -49,15 +54,15 @@ class LoginActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(accountDao: AccountDao) {
+fun LoginScreen(accountDao: AccountDao, navController: NavController) {
 
     // Declare your mutable state for email and password
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
     var loginResult by remember { mutableStateOf("") }
 
     val coroutineScope = rememberCoroutineScope()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -101,9 +106,8 @@ fun LoginScreen(accountDao: AccountDao) {
                 coroutineScope.launch {
                     val account = accountDao.getAccountByEmailAndPassword(email, password)
                     if (account != null) {
-                        loginResult = "Login successful!"
-                    } else {
-                        loginResult = "Login failed. Check email and password."
+                        loginResult = "Login Succesfully"
+                        navController.navigate("home")
                     }
                 }
             }, // TODO: Handle login

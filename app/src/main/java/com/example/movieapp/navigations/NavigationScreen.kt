@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -38,7 +39,7 @@ fun NavigationScreen(accountDao: AccountDao) {
     ) {
         NavHost(navController = navController, startDestination = "home") {
             composable("home") { HomeScreen(navController) }
-            composable("login") { LoginScreen(accountDao) }
+            composable("login") { LoginScreen(accountDao, navController) }
             composable("register") { RegisterScreen(navController) }
             composable("detail/{movieId}") { backStackEntry ->
                 val movieId = backStackEntry.arguments?.getString("movieId")?.toIntOrNull()

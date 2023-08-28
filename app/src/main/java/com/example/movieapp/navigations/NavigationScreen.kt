@@ -8,6 +8,7 @@ package com.example.movieapp.navigations
 
 import DetailScreen
 import android.annotation.SuppressLint
+import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Favorite
@@ -52,6 +53,7 @@ fun NavigationScreen(accountDao: AccountDao, favouriteDao: FavouriteDao) {
                             loggedIn = false
                             accountId = null
                             // You can also navigate to the login screen here if needed
+                            Log.d("Logged Status","loggedIn = $loggedIn, accountId = $accountId")
                         }) {
                             Icon(imageVector = Icons.Default.ExitToApp, contentDescription = "Logout")
                         }
@@ -63,9 +65,12 @@ fun NavigationScreen(accountDao: AccountDao, favouriteDao: FavouriteDao) {
     ) {
         NavHost(navController = navController, startDestination = "home") {
             composable("home") { HomeScreen(navController) }
+
             composable("login") { backStackEntry ->
                 // Retrieve the account ID from the arguments if available
                 val accountIdFromArgs = backStackEntry.arguments?.getInt("accountId")
+                Log.d("accountIdFromArgs","$accountIdFromArgs")
+
                 if (accountIdFromArgs != null) {
                     accountId = accountIdFromArgs
                 }
@@ -73,12 +78,16 @@ fun NavigationScreen(accountDao: AccountDao, favouriteDao: FavouriteDao) {
                 LoginScreen(accountDao, navController) { loggedInState, accountIdState ->
                     loggedIn = loggedInState
                     accountId = accountIdState as Int?
+                    Log.d("LoginScreen Status","loggedIn = $loggedIn, accountId = $accountId")
                 }
             }
+
             composable("register") { RegisterScreen(navController) }
+
             composable("detail/{movieId}") { backStackEntry ->
                 val movieId = backStackEntry.arguments?.getString("movieId")?.toIntOrNull()
                 movieId?.let { id ->
+                    Log.d("accountId","$accountId")
                     DetailScreen(movieId = id, accountId , favouriteDao, navController = navController)
                 } /* Handle invalid movieId */
             }

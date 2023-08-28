@@ -1,3 +1,4 @@
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -88,6 +89,54 @@ fun DetailScreen(movieId: Int, accountId: Int?,favouriteDao: FavouriteDao, navCo
                     .height(200.dp)
             )
 
+            // Circular button for adding/removing favorite
+            FloatingActionButton(
+                onClick = {
+                    scope.launch {
+                        isFavorite = !isFavorite
+                        // Update favorite status in the database
+                        if (isFavorite) {
+                            // Add movie to favorites
+                            val favouriteEntity = FavouriteEntity(
+                                account_id = accountId,
+                                movie_name = movieDetail?.title ?: "",
+                                movie_id = movieId
+                            )
+                            Log.d("favouriteEntity","$favouriteEntity")
+                            favouriteDao.insertFavourite(favouriteEntity)
+                        } else {
+                            // Remove movie from favorites
+                            Log.d("movieId","$movieId")
+                            favouriteDao.deleteFavoriteById(movieId)
+                        }
+                    }
+                    // Toggle the favorite status
+                },
+                modifier = Modifier
+                    .padding(16.dp)
+                    .size(48.dp)
+            ) {
+                // Display heart icon based on favorite status
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+
+//            // Add a back button to navigate back to the previous screen
+//            IconButton(
+//                onClick = { navController.popBackStack() },
+//                modifier = Modifier
+//                    .padding(16.dp)
+//                    .size(48.dp)
+//            ) {
+//                Icon(
+//                    imageVector = Icons.Default.ArrowBack,
+//                    contentDescription = null,
+//                    tint = MaterialTheme.colorScheme.primary
+//                )
+//            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -105,50 +154,5 @@ fun DetailScreen(movieId: Int, accountId: Int?,favouriteDao: FavouriteDao, navCo
             )
         }
     }
-    // Circular button for adding/removing favorite
-    FloatingActionButton(
-        onClick = {
-            scope.launch {
-                isFavorite = !isFavorite
-                // Update favorite status in the database
-                if (isFavorite) {
-                    // Add movie to favorites
-                    val favouriteEntity = FavouriteEntity(
-                        account_id = accountId,
-                        movie_name = movieDetail?.title ?: "",
-                        movie_id = movieId
-                    )
-                    favouriteDao.insertFavourite(favouriteEntity)
-                } else {
-                    // Remove movie from favorites
-                    favouriteDao.deleteFavoriteById(movieId)
-                }
-            }
-            // Toggle the favorite status
-        },
-        modifier = Modifier
-            .padding(16.dp)
-            .size(48.dp)
-    ) {
-        // Display heart icon based on favorite status
-        Icon(
-            imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary
-        )
-    }
 
-    // Add a back button to navigate back to the previous screen
-    IconButton(
-        onClick = { navController.popBackStack() },
-        modifier = Modifier
-            .padding(16.dp)
-            .size(48.dp)
-    ) {
-        Icon(
-            imageVector = Icons.Default.ArrowBack,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary
-        )
-    }
 }

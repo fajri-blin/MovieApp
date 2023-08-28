@@ -35,7 +35,7 @@ fun FavouriteScreen(favouriteDao: FavouriteDao, accountId: Int?) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp)
+            .padding(top = 90.dp, start = 16.dp, end = 16.dp)
     ) {
         items(favouriteMovie) { favouriteMovie ->
             FavoriteMovieCard(favouriteMovie)

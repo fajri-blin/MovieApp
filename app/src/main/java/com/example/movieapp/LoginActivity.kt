@@ -41,10 +41,16 @@ class LoginActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    LoginScreen(accountDao, navController){
-                        loggedIn, accountId ->
-                        // Update login status here
+                    LoginScreen(accountDao, navController) { loggedIn, accountId ->
+                        val sharedPreferences = getSharedPreferences("session", MODE_PRIVATE)
+                        val editor = sharedPreferences.edit()
+                        editor.putBoolean("isLoggedIn", loggedIn)
+                        if (loggedIn) {
+                            editor.putInt("accountId", (accountId ?: -1) as Int) // Store the accountId
+                        }
+                        editor.apply()
                     }
+
                 }
             }
         }

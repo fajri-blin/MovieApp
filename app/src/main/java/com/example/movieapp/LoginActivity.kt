@@ -1,6 +1,9 @@
 package com.example.movieapp
 
+import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
@@ -14,6 +17,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
@@ -24,48 +28,16 @@ import com.example.movieapp.database.AppDatabase
 import com.example.movieapp.ui.theme.MovieAppTheme
 import kotlinx.coroutines.launch
 
-
-
-class LoginActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-        val appDatabase = AppDatabase.getDatabase(applicationContext)
-        val accountDao = appDatabase.accountDao()
-
-        setContent {
-            MovieAppTheme {
-                val navController = rememberNavController()
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    LoginScreen(accountDao, navController) { loggedIn, accountId ->
-                        val sharedPreferences = getSharedPreferences("session", MODE_PRIVATE)
-                        val editor = sharedPreferences.edit()
-                        editor.putBoolean("isLoggedIn", loggedIn)
-                        if (loggedIn) {
-                            editor.putInt("accountId", (accountId ?: -1) as Int) // Store the accountId
-                        }
-                        editor.apply()
-                    }
-
-                }
-            }
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(accountDao: AccountDao, navController: NavController, onLoginStatusChange: (Boolean, Any?) -> Unit) {
+fun LoginScreen(accountDao: AccountDao, navController: NavController) {
 
     // Declare your mutable state for email and password
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var loginResult by remember { mutableStateOf("") }
 
+    val sharedPreferences = LocalContext.current.getSharedPreferences("session", Context.MODE_PRIVATE)
     val coroutineScope = rememberCoroutineScope()
 
     Column(
@@ -110,12 +82,20 @@ fun LoginScreen(accountDao: AccountDao, navController: NavController, onLoginSta
             onClick = {
                 coroutineScope.launch {
                     val account = accountDao.getAccountByEmailAndPassword(email, password)
+                    val editor = sharedPreferences.edit()
+
                     if (account != null) {
-                        loginResult = "Login Succesfully"
-                        onLoginStatusChange(true, account.id)
+                        loginResult = "Login Successfully"
+
+                        editor.putBoolean("isLoggedIn", true)
+                        editor.putInt("accountId", account.id) // Store the accountId
+                        editor.apply()
+
                         navController.navigate("home")
-                    }else{
-                        onLoginStatusChange(false, null)
+                    } else {
+                        editor.putBoolean("isLoggedIn", false)
+                        editor.putInt("accountId", -1) // Store the accountId
+                        editor.apply()
                     }
                 }
             }, // TODO: Handle login

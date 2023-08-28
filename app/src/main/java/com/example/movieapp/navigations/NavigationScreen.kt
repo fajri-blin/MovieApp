@@ -8,6 +8,7 @@ package com.example.movieapp.navigations
 
 import DetailScreen
 import android.annotation.SuppressLint
+import android.content.Context
 import android.util.Log
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
@@ -20,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -36,13 +38,26 @@ import com.example.movieapp.database.FavouriteDao
 fun NavigationScreen(accountDao: AccountDao, favouriteDao: FavouriteDao) {
     val navController = rememberNavController()
     var loggedIn by remember { mutableStateOf(false) }
-    var accountId by remember {mutableStateOf<Int?>(null)}
+    var accountId: Int? = null
+
+    val sharedPreferences = LocalContext.current.getSharedPreferences("session", Context.MODE_PRIVATE)
+    val editor = sharedPreferences.edit()
+
+//    Log.d("sharedPreferences","$sharedPreferences")
+
+    loggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
+//    Log.d("isLoggedIn","$loggedIn")
+
+    accountId = sharedPreferences.getInt("accountId", -1) // -1 or any default value
+//    Log.d("accountId","$accountId")
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = "Movie App") },
                 actions = {
+                    loggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
+                    Log.d("isLoggedIn","$loggedIn")
                     if(loggedIn){
                         IconButton(onClick = {
                             navController.navigate("favourites")
@@ -52,6 +67,9 @@ fun NavigationScreen(accountDao: AccountDao, favouriteDao: FavouriteDao) {
                         IconButton(onClick = {
                             loggedIn = false
                             accountId = null
+                            editor.putBoolean("isLoggedIn", false)
+                            editor.putInt("accountId", -1) // Store the accountId
+                            editor.apply()
                             // You can also navigate to the login screen here if needed
                             Log.d("Logged Status","loggedIn = $loggedIn, accountId = $accountId")
                         }) {
@@ -75,18 +93,16 @@ fun NavigationScreen(accountDao: AccountDao, favouriteDao: FavouriteDao) {
                     accountId = accountIdFromArgs
                 }
 
-                LoginScreen(accountDao, navController) { loggedInState, accountIdState ->
-                    loggedIn = loggedInState
-                    accountId = accountIdState as Int?
-                    Log.d("LoginScreen Status","loggedIn = $loggedIn, accountId = $accountId")
-                }
+                LoginScreen(accountDao, navController)
             }
 
             composable("register") { RegisterScreen(navController) }
 
             composable("detail/{movieId}") { backStackEntry ->
                 val movieId = backStackEntry.arguments?.getString("movieId")?.toIntOrNull()
+                accountId = sharedPreferences.getInt("accountId", -1)
                 movieId?.let { id ->
+                    accountId = sharedPreferences.getInt("accountId", -1)
                     Log.d("accountId","$accountId")
                     DetailScreen(movieId = id, accountId , favouriteDao, navController = navController)
                 } /* Handle invalid movieId */

@@ -107,7 +107,7 @@ fun DetailScreen(movieId: Int, accountId: Int?,favouriteDao: FavouriteDao, navCo
                         } else {
                             // Remove movie from favorites
                             Log.d("movieId","$movieId")
-                            favouriteDao.deleteFavoriteById(movieId)
+                            favouriteDao.deleteFavoriteById(movieId, accountId)
                         }
                     }
                     // Toggle the favorite status

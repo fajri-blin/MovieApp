@@ -38,7 +38,7 @@ import com.example.movieapp.movie.TmdbApiManager.tmdbApiService
 import kotlinx.coroutines.launch
 
 @Composable
-fun DetailScreen(movieId: Int, accountId: Int?,favouriteDao: FavouriteDao, navController: NavController) {
+fun DetailScreen(movieId: Int, accountId: Int?,favouriteDao: FavouriteDao, navController: NavController, isLoggedIn: Boolean) {
     val scope = rememberCoroutineScope()
     var movieDetail by remember { mutableStateOf<MovieDetail?>(null) }
     var isFavorite by remember { mutableStateOf(false) }
@@ -89,40 +89,43 @@ fun DetailScreen(movieId: Int, accountId: Int?,favouriteDao: FavouriteDao, navCo
                     .height(200.dp)
             )
 
-            // Circular button for adding/removing favorite
-            FloatingActionButton(
-                onClick = {
-                    scope.launch {
-                        isFavorite = !isFavorite
-                        // Update favorite status in the database
-                        if (isFavorite) {
-                            // Add movie to favorites
-                            val favouriteEntity = FavouriteEntity(
-                                account_id = accountId,
-                                movie_name = movieDetail?.title ?: "",
-                                movie_id = movieId
-                            )
-                            Log.d("favouriteEntity","$favouriteEntity")
-                            favouriteDao.insertFavourite(favouriteEntity)
-                        } else {
-                            // Remove movie from favorites
-                            Log.d("movieId","$movieId")
-                            favouriteDao.deleteFavoriteById(movieId, accountId)
+            if(isLoggedIn){
+                FloatingActionButton(
+                    onClick = {
+                        scope.launch {
+                            isFavorite = !isFavorite
+                            // Update favorite status in the database
+                            if (isFavorite) {
+                                // Add movie to favorites
+                                val favouriteEntity = FavouriteEntity(
+                                    account_id = accountId,
+                                    movie_name = movieDetail?.title ?: "",
+                                    movie_id = movieId
+                                )
+                                Log.d("favouriteEntity","$favouriteEntity")
+                                favouriteDao.insertFavourite(favouriteEntity)
+                            } else {
+                                // Remove movie from favorites
+                                Log.d("movieId","$movieId")
+                                favouriteDao.deleteFavoriteById(movieId, accountId)
+                            }
                         }
-                    }
-                    // Toggle the favorite status
-                },
-                modifier = Modifier
-                    .padding(16.dp)
-                    .size(48.dp)
-            ) {
-                // Display heart icon based on favorite status
-                Icon(
-                    imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
+                        // Toggle the favorite status
+                    },
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .size(48.dp)
+                ) {
+                    // Display heart icon based on favorite status
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
+            // Circular button for adding/removing favorite
+
 
 //            // Add a back button to navigate back to the previous screen
 //            IconButton(

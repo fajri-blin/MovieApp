@@ -98,7 +98,7 @@ fun NavigationScreen(accountDao: AccountDao, favouriteDao: FavouriteDao) {
                 movieId?.let { id ->
                     accountId = sharedPreferences.getInt("accountId", -1)
                     Log.d("accountId","$accountId")
-                    DetailScreen(movieId = id, accountId , favouriteDao, navController = navController)
+                    DetailScreen(movieId = id, accountId , favouriteDao, navController = navController, loggedIn)
                 } /* Handle invalid movieId */
             }
             composable("favourites") {

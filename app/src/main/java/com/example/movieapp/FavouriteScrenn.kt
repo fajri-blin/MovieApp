@@ -1,5 +1,6 @@
 package com.example.movieapp
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -15,12 +16,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.movieapp.database.FavouriteDao
 import com.example.movieapp.database.FavouriteEntity
 import kotlinx.coroutines.launch
 
 @Composable
-fun FavouriteScreen(favouriteDao: FavouriteDao, accountId: Int?) {
+fun FavouriteScreen(navController: NavController,favouriteDao: FavouriteDao, accountId: Int?) {
     val couroutineScope = rememberCoroutineScope()
 
     var favouriteMovie by remember { mutableStateOf<List<FavouriteEntity>>(emptyList()) }
@@ -38,15 +40,18 @@ fun FavouriteScreen(favouriteDao: FavouriteDao, accountId: Int?) {
             .padding(top = 90.dp, start = 16.dp, end = 16.dp)
     ) {
         items(favouriteMovie) { favouriteMovie ->
-            FavoriteMovieCard(favouriteMovie)
+            FavoriteMovieCard(favouriteMovie, onDetailClick = {
+                navController.navigate("detail/${favouriteMovie.movie_id}")
+        })
         }
     }
 }
 
 @Composable
-fun FavoriteMovieCard(favouriteMovie: FavouriteEntity) {
+fun FavoriteMovieCard(favouriteMovie: FavouriteEntity, onDetailClick:() -> Unit) {
     Card(
         modifier = Modifier
+            .clickable{ onDetailClick.invoke() }
             .fillMaxWidth()
             .padding(8.dp)
     ) {

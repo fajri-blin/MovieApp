@@ -84,15 +84,7 @@ fun NavigationScreen(accountDao: AccountDao, favouriteDao: FavouriteDao) {
         NavHost(navController = navController, startDestination = "home") {
             composable("home") { HomeScreen(navController) }
 
-            composable("login") { backStackEntry ->
-                // Retrieve the account ID from the arguments if available
-                val accountIdFromArgs = backStackEntry.arguments?.getInt("accountId")
-                Log.d("accountIdFromArgs","$accountIdFromArgs")
-
-                if (accountIdFromArgs != null) {
-                    accountId = accountIdFromArgs
-                }
-
+            composable("login") {
                 LoginScreen(accountDao, navController)
             }
 

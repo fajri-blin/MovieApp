@@ -30,7 +30,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(accountDao: AccountDao, navController: NavController) {
+fun LoginScreen(accountDao: AccountDao, navController: NavController, onLoggedChanges: () -> Unit) {
 
     // Declare your mutable state for email and password
     var email by remember { mutableStateOf("") }
@@ -90,7 +90,7 @@ fun LoginScreen(accountDao: AccountDao, navController: NavController) {
                         editor.putBoolean("isLoggedIn", true)
                         editor.putInt("accountId", account.id) // Store the accountId
                         editor.apply()
-
+                        onLoggedChanges()
                         navController.navigate("home")
                     } else {
                         editor.putBoolean("isLoggedIn", false)

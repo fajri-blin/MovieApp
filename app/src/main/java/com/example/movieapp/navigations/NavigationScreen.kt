@@ -56,7 +56,7 @@ fun NavigationScreen(accountDao: AccountDao, favouriteDao: FavouriteDao) {
             TopAppBar(
                 title = { Text(text = "Movie App") },
                 actions = {
-                    loggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
+//                    loggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
                     Log.d("isLoggedIn","$loggedIn")
                     if(loggedIn){
                         IconButton(onClick = {
@@ -85,7 +85,9 @@ fun NavigationScreen(accountDao: AccountDao, favouriteDao: FavouriteDao) {
             composable("home") { HomeScreen(navController) }
 
             composable("login") {
-                LoginScreen(accountDao, navController)
+                LoginScreen(accountDao, navController){
+                    loggedIn = sharedPreferences.getBoolean("isLoggedIn", false)
+                }
             }
 
             composable("register") { RegisterScreen(navController) }
@@ -110,7 +112,10 @@ fun NavigationScreen(accountDao: AccountDao, favouriteDao: FavouriteDao) {
 @Composable
 fun NavigationActions(navController: NavHostController) {
     IconButton(
-        onClick = { navController.navigate("login") }
+        onClick = {
+//            onLoggedChanges(true)
+            navController.navigate("login")
+        }
     ) {
         Icon(imageVector = Icons.Default.Lock, contentDescription = "Login")
     }

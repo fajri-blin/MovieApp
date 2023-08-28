@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -12,11 +13,16 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -42,6 +48,7 @@ import com.example.movieapp.movie.ApiUtils
 import com.example.movieapp.movie.TmdbApiManager.tmdbApiService
 import com.example.movieapp.navigations.NavigationScreen
 import com.example.movieapp.ui.theme.MovieAppTheme
+import okhttp3.Headers
 
 
 class MainActivity : ComponentActivity() {
@@ -78,20 +85,35 @@ fun HomeScreen(navController: NavController) {
     val scope = rememberCoroutineScope()
     var movieList by remember { mutableStateOf<List<Movie>>(emptyList()) }
 
+    var currentPage by remember { mutableStateOf(1) }
+    var isFetching by remember { mutableStateOf(false) }
+    var totalPages by remember { mutableStateOf(1) }
+
+    // Create a state for LazyGridState
+    val lazyGridState = rememberLazyGridState( )
+
     // Fetch movie data using the API
-    LaunchedEffect(Unit) {
-        val response = tmdbApiService.getPopularMovies(ApiUtils.tmdbApiKey, page = 1)
-        if (response.isSuccessful) {
-            val movieResponseList = response.body()?.results ?: emptyList()
-            movieList = movieResponseList.map { movieResponse ->
-                Movie(
-                    id = movieResponse.id,
-                    title = movieResponse.title,
-                    imageUrl = "https://image.tmdb.org/t/p/w500${movieResponse.poster_path}",
-                    year = movieResponse.release_date.substring(0, 4) // Extract the year
-                    // Add other properties as needed
-                )
+    LaunchedEffect(currentPage) {
+        if (!isFetching && currentPage <= totalPages) {
+            isFetching = true
+            val response = tmdbApiService.getPopularMovies(ApiUtils.tmdbApiKey, page = currentPage)
+            if (response.isSuccessful) {
+                val movieResponseList = response.body()?.results ?: emptyList()
+
+                // Extract total_pages value from response headers
+                val headers: Headers = response.headers()
+                totalPages = headers["X-Total-Pages"]?.toInt() ?: 1
+
+                movieList += movieResponseList.map { movieResponse ->
+                    Movie(
+                        id = movieResponse.id,
+                        title = movieResponse.title,
+                        imageUrl = "https://image.tmdb.org/t/p/w500${movieResponse.poster_path}",
+                        year = movieResponse.release_date.substring(0, 4)
+                    )
+                }
             }
+            isFetching = false
         }
     }
 
@@ -100,15 +122,30 @@ fun HomeScreen(navController: NavController) {
     ) {
         Spacer(modifier = Modifier.height(16.dp)) // Add spacer with desired padding value
         // Display fetched movie data here
-        LazyVerticalGrid(columns = GridCells.Fixed(2), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp)){
-            items(movieList) { movie ->
-                MovieCard(movie = movie, onMovieClick = {
-                    navController.navigate("detail/${movie.id}")
-                })
+        LazyVerticalGrid(
+            state = lazyGridState,
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+            columns = GridCells.Fixed(2), // 2 columns
+            content = {
+                items(movieList) { movie ->
+                    MovieCard(movie = movie, onMovieClick = {
+                        navController.navigate("detail/${movie.id}")
+                    })
+                }
+
+                // Load more items when reaching the end of the list
+                if (!isFetching && currentPage < totalPages) {
+                    item {
+                        CircularProgressIndicator(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp)
+                        )
+                    }
+                }
             }
-        }
+        )
     }
 }
+
 
 @Composable
 fun MovieCard(movie: Movie, onMovieClick: () -> Unit) {

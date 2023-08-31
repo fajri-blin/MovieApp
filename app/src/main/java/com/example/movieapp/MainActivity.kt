@@ -1,6 +1,7 @@
 package com.example.movieapp
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -36,9 +38,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import coil.compose.ImagePainter
 import coil.compose.rememberImagePainter
 import com.example.movieapp.database.AccountDao
 import com.example.movieapp.database.FavouriteDao
@@ -83,61 +87,131 @@ fun MainContent(accountDao: AccountDao, favouriteDao: FavouriteDao, navControlle
 @Composable
 fun HomeScreen(navController: NavController) {
     val scope = rememberCoroutineScope()
-    var movieList by remember { mutableStateOf<List<Movie>>(emptyList()) }
+    var popularMovieList by remember { mutableStateOf<List<Movie>>(emptyList()) }
+    var topRatedMovieList by remember { mutableStateOf<List<Movie>>(emptyList()) }
 
-    var currentPage by remember { mutableStateOf(1) }
-    var isFetching by remember { mutableStateOf(false) }
-    var totalPages by remember { mutableStateOf(1) }
+    var currentPopularPage by remember { mutableStateOf(1) }
+    var currentTopRatedPage by remember { mutableStateOf(1) }
+    var isPopularFetching by remember { mutableStateOf(false) }
+    var isTopRatedFetching by remember { mutableStateOf(false) }
+    var totalPopularPages by remember { mutableStateOf(1) }
+    var totalTopRatedPages by remember { mutableStateOf(1) }
 
-    // Create a state for LazyGridState
-    val lazyGridState = rememberLazyGridState( )
-
-    // Fetch movie data using the API
-    LaunchedEffect(currentPage) {
-        if (!isFetching && currentPage <= totalPages) {
-            isFetching = true
-            val response = tmdbApiService.getPopularMovies(ApiUtils.tmdbApiKey, page = currentPage)
+    // Fetch popular movie data using the API
+    LaunchedEffect(currentPopularPage) {
+        if (!isPopularFetching && currentPopularPage <= totalPopularPages) {
+            isPopularFetching = true
+            val response = tmdbApiService.getPopularMovies(ApiUtils.tmdbApiKey, currentPopularPage)
             if (response.isSuccessful) {
-                val movieResponseList = response.body()?.results ?: emptyList()
+                val responseBody = response.body()
 
-                // Extract total_pages value from response headers
-                val headers: Headers = response.headers()
-                totalPages = headers["X-Total-Pages"]?.toInt() ?: 1
+                if (responseBody != null) {
+                    val movieResponseList = responseBody.results
 
-                movieList += movieResponseList.map { movieResponse ->
-                    Movie(
-                        id = movieResponse.id,
-                        title = movieResponse.title,
-                        imageUrl = "https://image.tmdb.org/t/p/w500${movieResponse.poster_path}",
-                        year = movieResponse.release_date.substring(0, 4)
-                    )
+                    val headers: Headers = response.headers()
+                    totalPopularPages = headers["X-Total-Pages"]?.toInt() ?: 1
+
+                    popularMovieList += movieResponseList.map { movieResponse ->
+                        Movie(
+                            id = movieResponse.id,
+                            title = movieResponse.title,
+                            imageUrl = "https://image.tmdb.org/t/p/w500${movieResponse.poster_path}",
+                            year = movieResponse.release_date.substring(0, 4)
+                        )
+                    }
+
+                    Log.d("popularMovieList","$popularMovieList")
+
+                    currentPopularPage++
                 }
             }
-            isFetching = false
+            isPopularFetching = false
+        }
+    }
+
+    // Fetch top-rated movie data using the API
+    LaunchedEffect(currentTopRatedPage) {
+        if (!isTopRatedFetching && currentTopRatedPage <= totalTopRatedPages) {
+            isTopRatedFetching = true
+            val response = tmdbApiService.getTopRatedMovie(ApiUtils.tmdbApiKey, currentTopRatedPage)
+            if (response.isSuccessful) {
+                val responseBody = response.body()
+
+                if (responseBody != null) {
+                    val movieResponseList = responseBody.results
+
+                    movieResponseList.forEach { movieResponse ->
+                        Log.d("Poster Path", "Movie ID: ${movieResponse.id}, Poster Path: ${movieResponse.poster_path}")
+                    }
+
+                    val headers: Headers = response.headers()
+                    totalTopRatedPages = headers["X-Total-Pages"]?.toInt() ?: 1
+
+                    topRatedMovieList += movieResponseList.map { movieResponse ->
+                        Movie(
+                            id = movieResponse.id,
+                            title = movieResponse.title,
+                            imageUrl = "https://image.tmdb.org/t/p/w500${movieResponse.poster_path}",
+                            year = movieResponse.release_date.substring(0, 4)
+                        )
+                    }
+                    Log.d("topRatedMovie","$topRatedMovieList")
+
+                    currentTopRatedPage++
+                }
+            }
+            isTopRatedFetching = false
         }
     }
 
     Column(
-        modifier = Modifier.padding(top = 50.dp) // Add padding at the top
+        modifier = Modifier.padding(top = 50.dp)
     ) {
-        Spacer(modifier = Modifier.height(16.dp)) // Add spacer with desired padding value
-        // Display fetched movie data here
-        LazyVerticalGrid(
-            state = lazyGridState,
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Display top-rated movie section with horizontal scrolling
+        Text(
+            text = "Top Rated Movies",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        LazyRow(
+            state = rememberLazyListState(),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
-            columns = GridCells.Fixed(2), // 2 columns
             content = {
-                items(movieList) { movie ->
+                items(topRatedMovieList) { movie ->
+                    MovieCard(movie = movie, onMovieClick = {
+                        navController.navigate("detail/${movie.id}")
+                    })
+                }
+            }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Display popular movie section with vertical scrolling
+        Text(
+            text = "Popular Movies",
+            style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+        LazyVerticalGrid(
+            state = rememberLazyGridState(),
+            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+            columns = GridCells.Fixed(2),
+            content = {
+                items(popularMovieList) { movie ->
                     MovieCard(movie = movie, onMovieClick = {
                         navController.navigate("detail/${movie.id}")
                     })
                 }
 
-                // Load more items when reaching the end of the list
-                if (!isFetching && currentPage < totalPages) {
+                if (!isPopularFetching && currentPopularPage < totalPopularPages) {
                     item {
                         CircularProgressIndicator(
-                            modifier = Modifier.fillMaxWidth().padding(16.dp)
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
                         )
                     }
                 }
@@ -145,6 +219,7 @@ fun HomeScreen(navController: NavController) {
         )
     }
 }
+
 
 
 @Composable
@@ -159,10 +234,12 @@ fun MovieCard(movie: Movie, onMovieClick: () -> Unit) {
             modifier = Modifier
                 .padding(16.dp)
         ) {
+            val context = LocalContext.current
+
             Image(
-                painter = rememberImagePainter(data = movie.imageUrl, builder = {
-                    crossfade(true)
-                }),
+                painter = rememberImagePainter(
+                    data = movie.imageUrl
+                    ),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -170,6 +247,7 @@ fun MovieCard(movie: Movie, onMovieClick: () -> Unit) {
                     .clip(shape = RoundedCornerShape(8.dp)),
                 contentScale = ContentScale.Crop
             )
+
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = movie.title,

@@ -18,6 +18,12 @@ interface TmdbApiService {
         @Path("movie_id") movieId: Int,
         @Query("api_key") apiKey: String
     ): Response<MovieDetailResponse>
+
+    @GET("movie/top_rated")
+    suspend fun getTopRatedMovie(
+        @Query("api_key") apiKey: String,
+        @Query("page") page: Int
+    ): Response<ApiResponse<MovieResponse>>
 }
 
 data class ApiResponse<T>(

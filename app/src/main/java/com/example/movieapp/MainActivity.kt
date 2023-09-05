@@ -53,6 +53,7 @@ import com.example.movieapp.movie.ApiUtils
 import com.example.movieapp.movie.TmdbApiManager.tmdbApiService
 import com.example.movieapp.navigations.NavigationScreen
 import com.example.movieapp.ui.theme.MovieAppTheme
+import kotlinx.coroutines.launch
 import okhttp3.Headers
 
 
@@ -98,72 +99,113 @@ fun HomeScreen(navController: NavController) {
     var totalPopularPages by remember { mutableStateOf(1) }
     var totalTopRatedPages by remember { mutableStateOf(1) }
 
-    // Fetch popular movie data using the API
-    LaunchedEffect(currentPopularPage) {
-        if (!isPopularFetching && currentPopularPage <= totalPopularPages) {
-            isPopularFetching = true
-            val response = tmdbApiService.getPopularMovies(ApiUtils.tmdbApiKey, currentPopularPage)
-            if (response.isSuccessful) {
-                val responseBody = response.body()
+    // Step 1: Create a scroll state for popular movies
+    val popularMovieScrollState = rememberLazyGridState()
 
-                if (responseBody != null) {
-                    val movieResponseList = responseBody.results
+    // Step 4: Create a scroll state for top-rated movies
+    val topRatedMovieScrollState = rememberLazyListState()
 
-                    val headers: Headers = response.headers()
-                    totalPopularPages = headers["X-Total-Pages"]?.toInt() ?: 1
+    // Step 7: Define the loadMorePopularData function
+    fun loadMorePopularData() {
+        scope.launch {
+            try {
+                isPopularFetching = true
+                val response = tmdbApiService.getPopularMovies(ApiUtils.tmdbApiKey, currentPopularPage)
 
-                    popularMovieList += movieResponseList.map { movieResponse ->
-                        Movie(
-                            id = movieResponse.id,
-                            title = movieResponse.title,
-                            imageUrl = "https://image.tmdb.org/t/p/w500${movieResponse.poster_path}",
-                            year = movieResponse.release_date.substring(0, 4)
-                        )
+                if (response.isSuccessful) {
+                    val responseBody = response.body()
+
+                    if (responseBody != null) {
+                        val movieResponseList = responseBody.results
+                        popularMovieList += movieResponseList.map { movieResponse ->
+                            Movie(
+                                id = movieResponse.id,
+                                title = movieResponse.title,
+                                imageUrl = "https://image.tmdb.org/t/p/w500${movieResponse.poster_path}",
+                                year = movieResponse.release_date.substring(0, 4)
+                            )
+                        }
+
+                        // Increment the current page
+                        currentPopularPage++
                     }
-
-                    Log.d("popularMovieList","$popularMovieList")
-
-                    currentPopularPage++
+                } else {
+                    Log.e("LoadMore", "Response not successful: ${response.code()}")
                 }
+            } catch (e: Exception) {
+                Log.e("LoadMore", "Error loading more popular data: ${e.message}")
+                // Handle any errors or exceptions here
+            } finally {
+                isPopularFetching = false
             }
-            isPopularFetching = false
         }
     }
 
-    // Fetch top-rated movie data using the API
-    LaunchedEffect(currentTopRatedPage) {
-        if (!isTopRatedFetching && currentTopRatedPage <= totalTopRatedPages) {
-            isTopRatedFetching = true
-            val response = tmdbApiService.getTopRatedMovie(ApiUtils.tmdbApiKey, currentTopRatedPage)
-            response.code()
-            if (response.isSuccessful) {
+    // Step 8: Define the loadMoreTopRatedData function
+    fun loadMoreTopRatedData() {
+        scope.launch {
+            try {
+                isTopRatedFetching = true
+                val response = tmdbApiService.getTopRatedMovie(ApiUtils.tmdbApiKey, currentTopRatedPage)
 
-                val responseBody = response.body()
+                if (response.isSuccessful) {
+                    val responseBody = response.body()
 
-                if (responseBody != null) {
-                    val movieResponseList = responseBody.results
+                    if (responseBody != null) {
+                        val movieResponseList = responseBody.results
+                        topRatedMovieList += movieResponseList.map { movieResponse ->
+                            Movie(
+                                id = movieResponse.id,
+                                title = movieResponse.title,
+                                imageUrl = "https://image.tmdb.org/t/p/w500${movieResponse.poster_path}",
+                                year = movieResponse.release_date.substring(0, 4)
+                            )
+                        }
 
-                    movieResponseList.forEach { movieResponse ->
-                        Log.d("Poster Path", "Movie ID: ${movieResponse.id}, Poster Path: ${movieResponse.poster_path}")
+                        // Increment the current page
+                        currentTopRatedPage++
                     }
-
-                    val headers: Headers = response.headers()
-                    totalTopRatedPages = headers["X-Total-Pages"]?.toInt() ?: 1
-
-                    topRatedMovieList += movieResponseList.map { movieResponse ->
-                        Movie(
-                            id = movieResponse.id,
-                            title = movieResponse.title,
-                            imageUrl = "https://image.tmdb.org/t/p/w500${movieResponse.poster_path}",
-                            year = movieResponse.release_date.substring(0, 4)
-                        )
-                    }
-                    Log.d("topRatedMovie","$topRatedMovieList")
-
-                    currentTopRatedPage++
+                } else {
+                    Log.e("LoadMore", "Response not successful: ${response.code()}")
                 }
+            } catch (e: Exception) {
+                Log.e("LoadMore", "Error loading more top-rated data: ${e.message}")
+                // Handle any errors or exceptions here
+            } finally {
+                isTopRatedFetching = false
             }
-            isTopRatedFetching = false
+        }
+    }
+
+
+
+    // Load initial data when the composable is first displayed
+    LaunchedEffect(Unit) {
+        loadMorePopularData()
+        loadMoreTopRatedData()
+    }
+
+    // Step 2: Add a scroll listener to detect when the end of the list is reached for popular movies
+    val popularMovieVisibleItemCount = popularMovieScrollState.layoutInfo.visibleItemsInfo.size
+
+    // Step 5: Add a scroll listener to detect when the end of the list is reached for top-rated movies
+    val topRatedMovieVisibleItemCount = topRatedMovieScrollState.layoutInfo.visibleItemsInfo.size
+
+    // Step 3: Load more popular movies when the end is reached
+    LaunchedEffect(popularMovieVisibleItemCount) {
+        if (!isPopularFetching && popularMovieVisibleItemCount >= popularMovieList.size - 4 && currentPopularPage < totalPopularPages) {
+            // Load more data when there are 4 or fewer items left in the list
+            currentPopularPage++
+            loadMorePopularData()
+        }
+    }
+
+    // Step 6: Load more top-rated movies when the end is reached
+    LaunchedEffect(topRatedMovieVisibleItemCount) {
+        if (!isTopRatedFetching && topRatedMovieVisibleItemCount >= topRatedMovieList.size - 4 && currentTopRatedPage < totalTopRatedPages) {
+            // Load more data when there are 4 or fewer items left in the list
+            currentTopRatedPage++
+            loadMoreTopRatedData()
         }
     }
 
@@ -199,7 +241,8 @@ fun HomeScreen(navController: NavController) {
             modifier = Modifier.padding(bottom = 8.dp)
         )
         LazyVerticalGrid(
-            state = rememberLazyGridState(),
+            // Step 7: Use the scroll state for popular movies
+            state = popularMovieScrollState,
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
             columns = GridCells.Fixed(2),
             content = {
@@ -223,11 +266,14 @@ fun HomeScreen(navController: NavController) {
     }
 }
 
+// ... (same steps for loadMorePopularData and top-rated movies)
+
+
 
 
 @Composable
 fun MovieCard(movie: Movie, onMovieClick: () -> Unit) {
-    Log.d("movie.imageUrl","${movie.imageUrl}")
+//    Log.d("movie.imageUrl","${movie.imageUrl}")
     Card(
         modifier = Modifier
             .clickable { onMovieClick.invoke() }
